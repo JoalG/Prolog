@@ -6,7 +6,7 @@ initial_state( bcp, bcp( 0, left, [a,b,c,d], [] ) ).
 
 % En el estado final el tiempo es 17 , linterna esta en la posicion rigth,
 % todos se encuentran en la lista der y nadie a la izq.
-final_state( bcp( 17, rigth, [], [a,b,c,d] ) ).
+final_state( bcp( 15, rigth, [], [a,b,c,d] ) ).
 
 
 move( bcp( _ , left, LList, _) , People) :- cross(People,LList).
@@ -20,7 +20,12 @@ opp(rigth,left).
 tim(a,1).
 tim(b,2).
 tim(c,5).
-tim(d,10).
+tim(d,8).
+
+
+prueba([X|Xs],L):- ele(X,L);prueba(Xs,L) .
+
+ele(X,L):- L is X.
 
 
 update(bcp(Time1,Pos1,LList1,RList1),People,bcp(Time2,Pos2,LList2,RList2)):- opp(Pos1,Pos2),
@@ -28,7 +33,7 @@ update(bcp(Time1,Pos1,LList1,RList1),People,bcp(Time2,Pos2,LList2,RList2)):- opp
         takes(People,LList1,LList2),append(People,RList1,RList2),findtime(People,Time),Time2 is Time1+Time);
         (Pos1=rigth,
         takes(People,RList1,RList2),append(People,LList1,LList2),findtime(People,Time),Time2 is Time1+Time)).
-    
+      %Falta el orden abc != bca
     
     
 /* we know just one or two persons cross the bridge */
@@ -43,6 +48,9 @@ takes(S,L,R):- findall(Z,(member(Z,L),not(member(Z,S))),R).
 
 /* take all the combinations of 1 person, and 2 persons from our group: [a,b,c,d] */
 cross(Comb,List):- comb(1,List,Comb); comb(2,List,Comb).
+
+
+crossN(Comb,List,N1):- comb(N1,List,Comb) ; (N2 is N1-1, N2 >= 1 , crossN(Comb,List,N2)).
 
 /* mem1(Lr,L). For comb/3. Same as mem/2 but does not generate [a,b] and [b,a]. 	
 	?- mem1([X,Y],[a,b,c]).
@@ -60,7 +68,7 @@ comb(N,L,X):-length(X,N),mem1(X,L).
 
 
 
-legal(bcp( Time , _, _, _)) :- Time < 18. 
+legal(bcp( Time , _, _, _)) :- Time < 16. 
 
 
 
