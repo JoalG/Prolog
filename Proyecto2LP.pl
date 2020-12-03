@@ -4,20 +4,30 @@
 % todos se encuentran en la lista izq y nadie a la der.
 %initial_state( bcp, bcp( Time, Pos, PLeft, PRigth , Tmax, Pmax ) ).
 
-initial_state( bcp, bcp( 0, left, [(a,1),(b,2),(c,5),(d,8)], [] , 15, 3 ) ).
+initial_state( bcp, bcp( 0, left, [(a,1),(b,2),(c,5),(d,10),(e,15),(j,20)], [] , 42, 2 ) ).
 
 % En el estado final el tiempo es 17 , linterna esta en la posicion rigth,
 % todos se encuentran en la lista der y nadie a la izq.
-final_state( bcp( Tmax, rigth, [], [(a,1),(b,2),(c,5),(d,8)], Tmax, _ ) ).
+
+%final_state( bcp( Tmax, rigth, [], [(a,1),(b,2),(c,5),(d,8)], Tmax, _ ) ).
+%Solo en ese orden especifico 
+
+final_state( bcp( Tmax, rigth, [], L1, Tmax, _ ) ):- perm([(a,1),(b,2),(c,5),(d,10),(e,15),(j,20)],L1).
+
+perm(List,[H|Perm]) :- delete(H,List,Rest),perm(Rest,Perm).
+perm([],[]).
+
+delete(X,[X|T],T).
+delete(X,[H|T],[H|NT]) :- delete(X,T,NT).
 
 
-move( bcp( _ , left, LList, _, _, Pmax) , People) :- crossN(People,LList,Pmax).
+move( bcp( _ , left, LList, _, _, Pmax) , People) :- crossNL(People,LList,Pmax).
 
-move( bcp( _ , rigth, _, RList, _, Pmax) , People) :- crossN(People,RList,Pmax) .
+move( bcp( _ , rigth, _, RList, _, Pmax) , People) :- crossNR(People,RList,Pmax) .
 
 
 opp(left,rigth).  
-opp(rigth,left).
+opp(rigth,left).                         
 
 
 
@@ -50,7 +60,11 @@ takes(S,L,R):- findall(Z,(member(Z,L),not(member(Z,S))),R).
 cross(Comb,List):- comb(1,List,Comb); comb(2,List,Comb).
 
 
-crossN(Comb,List,N1):- comb(N1,List,Comb) ; (N2 is N1-1, N2 >= 1 , crossN(Comb,List,N2)).
+crossNL(Comb,List,N1):- comb(N1,List,Comb) ; (N2 is N1-1, N2 >= 1 , crossNL(Comb,List,N2)).
+
+crossNR(Comb,List,N1):-crossNR(Comb,List,N1,1).
+crossNR(Comb,List,NMax,N1):- comb(N1,List,Comb).%; (N2 is N1+1, N2 =< NMax , crossNR(Comb,List,NMax,N2)).
+
 
 /* mem1(Lr,L). For comb/3. Same as mem/2 but does not generate [a,b] and [b,a]. 	
 	?- mem1([X,Y],[a,b,c]).
