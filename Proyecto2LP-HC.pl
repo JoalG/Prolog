@@ -1,3 +1,5 @@
+% Bridge crossing   consult('Proyecto2LP-HC.pl').
+
 /*
  * solve_hill_climb(State,History,Moves)
  *   Moves es la secuencia de movidas requeridas para
@@ -68,66 +70,108 @@ test_hill_climb(Problem,Moves) :-
    solve_hill_climb(State,[State],Moves).  % inicia resoluci�n desde Estado
 
 
-
-% === Relaciones que definen el problema zgm     === %
-% === Son las mismas incluidas en depth-first.pl === %
-
-initial_state(zgm,zgm(izq,[zorra,gallina,maiz],[])).
-
-final_state(zgm(der,[],[zorra,gallina,maiz])).
-
-move(zgm(izq,I,_),Carga):-member(Carga,I).
-move(zgm(der,_,D),Carga):-member(Carga,D).
-move(zgm(_,_,_),solo).
-
-update(zgm(B,I,D),Carga,zgm(B1,I1,D1)):-
-update_Bote(B,B1),
-update_margenes(Carga,B,I,D,I1,D1).
-
-update_Bote(izq,der).
-update_Bote(der,izq).
-
-update_margenes(solo,_,I,D,I,D).
-update_margenes(Carga,izq,I,D,I1,D1):-
-      select(Carga,I,I1),
-      insert(Carga,D,D1).
-update_margenes(Carga,der,I,D,I1,D1):-
-      select(Carga,D,D1),
-      insert(Carga,I,I1).
-
-insert(X,[Y|Ys],[X,Y|Ys]):-precedes(X,Y).
-insert(X,[Y|Ys],[Y|Zs]):-precedes(Y,X),insert(X,Ys,Zs).
-insert(X,[],[X]).
-
-select(X,[X|Xs],Xs).
-select(X,[Y|Ys],[Y|Zs]):-select(X,Ys,Zs).
-
-% Caso no determin�stico
-% precedes(zorra,_).
-% precedes(_,maiz).
-
-% Caso determin�stico
-precedes(zorra,gallina).
-precedes(zorra,maiz).
-precedes(gallina,maiz).
+/*
+    En el estado incial el tiempo es 0 , linterna esta en la posicion left,
+    todos se encuentran en la lista izq y nadie a la der.
+    initial_state( bcp, bcp( Time, Pos, PLeft, PRigth , Tmax, Pmax ) ).    
+*/
+initial_state( bcp, bcp( 0, left, [(a,1),(b,2),(c,5),(d,10),(e,15),(j,20)], [] , 42, 2 ) ).
 
 
-legal(zgm(izq,_,D)):-not(ilegal(D)).
-legal(zgm(der,I,_)):-not(ilegal(I)).
+/*
+    En el estado final el tiempo es TMax , linterna esta en la posicion rigth,
+    todos se encuentran en la lista der y nadie a la izq.
+*/
+final_state( bcp( Tmax, rigth, [], L1, Tmax, _ ) ):- perm([(a,1),(b,2),(c,5),(d,10),(e,15),(j,20)],L1).
 
-ilegal(L):-member(zorra,L),member(gallina,L).
-ilegal(L):-member(gallina,L),member(maiz,L).
+% Permuta la lista para ver si es uan solucion
+perm(List,[H|Perm]) :- delete(H,List,Rest),perm(Rest,Perm).
+perm([],[]).
 
-% === Fin de las relaciones usadas por depth-first.pl ==%
+delete(X,[X|T],T).
+delete(X,[H|T],[H|NT]) :- delete(X,T,NT).
 
 
-% === Relaci�n adicional requerida por hill-climb para resolver zgm. === %
-% === Value/2 es una heur�sica que da valores m�s altos conforme     === %
-% === haya m�s cosas en la rivera derecha.                           === %
+/*
+    Genera los posibles movimientos de un estado a otro. 
+*/
 
-value(zgm(_,_,[]),0).
-value(zgm(_,_,[_]),1).
-value(zgm(_,_,[_,_]),2).
-value(zgm(_,_,[_,_,_]),3).
+% Movimientos de izq a derecha 
+move( bcp( _ , left, LList, _, _, Pmax) , People) :- crossNL(People,LList,Pmax).
+
+% Movimientos de derecha a izq
+move( bcp( _ , rigth, _, RList, _, _) , People) :- crossNR(People,RList) .
+
+% Combinacciones para cruzar de las personas
+
+% De izquierda a derecha va de las combinaciones de la mayor cantidad de personas posibles a 1 
+crossNL(Comb,List,N1):- comb(N1,List,Comb); (N2 is N1-1, N2 >= 1 , crossNL(Comb,List,N2)).
+% De derecha a izquierda solo cruza una de las personas
+crossNR(Comb,List):-comb(1,List,Comb).
+
+% Combinaciones de N elementos de una lista
+comb(N,L,X):-length(X,N),mem1(X,L).
+
+mem1([],_).
+mem1([H|T],Y):-member(H,Y),rest(H,Y,New),mem1(T,New).
+
+rest(A,L,R):- append(_,[A|R],L),!.
+
+
+/*
+    Actualiza un estado a otro 
+*/
+update(bcp(Time1,Pos1,LList1,RList1, Tmax, Pmax),People,bcp(Time2,Pos2,LList2,RList2, Tmax, Pmax)):- 
+        opp(Pos1,Pos2),
+        (   
+            (   Pos1=left,
+                takes(People,LList1,LList2),
+                append(People,RList1,RList2),
+                findtime(People,Time),
+                Time2 is Time1+Time
+            );
+        
+            (   Pos1=rigth,
+                takes(People,RList1,RList2),
+                append(People,LList1,LList2),
+                findtime(People,Time),
+                Time2 is Time1+Time
+            )
+        ).
+      
+
+% Cambia el lado de la linterna
+opp(left,rigth).  
+opp(rigth,left).         
+    
+% Busca el mayor tiempo entre las personas de una lista 
+findtime([(_,T)],Tim):- Tim is T,!.
+findtime([(_,T1) | Ls],Tim):-  findtime(Ls,T2), Tim is max(T1,T2).
+
+% Remueve elementos de una lista.
+takes(S,L,R):- findall(Z,(member(Z,L),not(member(Z,S))),R).
+
+
+/*
+    Determina si un movimiento es legal 
+*/
+legal(bcp( Time , _, PLeft, _, Tmax, _)) :- maxTime(PLeft,MaxTimeLeft) , (Time + MaxTimeLeft) < Tmax+1 . 
+
+% Determina el tiempo maximo 
+maxTime([],0).
+maxTime([(_,T1)], T1) :- !.
+maxTime([(P1,T1),(P2,T2)|Tail], N):-
+    ( T1 < T2 ->
+        maxTime([(P2,T2)|Tail], N)
+    ;
+        maxTime([(P1,T1)|Tail], N)
+    ).
+
+
+/*
+    Calcula el valor de un estado 
+    Es la euristica 
+*/
+value(bcp( _, _, _, PRigth , _, _),Value):-length(PRigth,Value).
 
 

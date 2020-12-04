@@ -75,14 +75,14 @@ delete(X,[H|T],[H|NT]) :- delete(X,T,NT).
 move( bcp( _ , left, LList, _, _, Pmax) , People) :- crossNL(People,LList,Pmax).
 
 % Movimientos de derecha a izq
-move( bcp( _ , rigth, _, RList, _, Pmax) , People) :- crossNR(People,RList,Pmax) .
+move( bcp( _ , rigth, _, RList, _, _) , People) :- crossNR(People,RList) .
 
 % Combinacciones para cruzar de las personas
 
 % De izquierda a derecha va de las combinaciones de la mayor cantidad de personas posibles a 1 
 crossNL(Comb,List,N1):- comb(N1,List,Comb); (N2 is N1-1, N2 >= 1 , crossNL(Comb,List,N2)).
 % De derecha a izquierda solo cruza una de las personas
-crossNR(Comb,List,N1):-comb(1,List,Comb).
+crossNR(Comb,List):-comb(1,List,Comb).
 
 % Combinaciones de N elementos de una lista
 comb(N,L,X):-length(X,N),mem1(X,L).
