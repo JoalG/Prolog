@@ -1,4 +1,4 @@
-% Bridge crossing   consult('Proyecto2LP.pl').
+% Bridge crossing   consult('Proyecto2LP-DF.pl').
 
 % En el estado incial el tiempo es 0 , linterna esta en la posicion left,
 % todos se encuentran en la lista izq y nadie a la der.
@@ -62,8 +62,7 @@ cross(Comb,List):- comb(1,List,Comb); comb(2,List,Comb).
 
 crossNL(Comb,List,N1):- comb(N1,List,Comb) ; (N2 is N1-1, N2 >= 1 , crossNL(Comb,List,N2)).
 
-crossNR(Comb,List,N1):-crossNR(Comb,List,N1,1).
-crossNR(Comb,List,NMax,N1):- comb(N1,List,Comb).%; (N2 is N1+1, N2 =< NMax , crossNR(Comb,List,NMax,N2)).
+crossNR(Comb,List,N1):-comb(1,List,Comb).
 
 
 /* mem1(Lr,L). For comb/3. Same as mem/2 but does not generate [a,b] and [b,a]. 	
@@ -82,8 +81,16 @@ comb(N,L,X):-length(X,N),mem1(X,L).
 
 
 
-legal(bcp( Time , _, _, _, Tmax, _)) :- Time < Tmax+1. 
+legal(bcp( Time , _, PLeft, _, Tmax, _)) :- maxTime(PLeft,MaxTimeLeft) , (Time + MaxTimeLeft) < Tmax+1 . 
 
+maxTime([],0).
+maxTime([(_,T1)], T1) :- !.
+maxTime([(P1,T1),(P2,T2)|Tail], N):-
+    ( T1 < T2 ->
+        maxTime([(P2,T2)|Tail], N)
+    ;
+        maxTime([(P1,T1)|Tail], N)
+    ).
 
 
 
