@@ -50,14 +50,14 @@ test_dfs(Problema,Movidas) :-
     todos se encuentran en la lista izq y nadie a la der.
     initial_state( bcp, bcp( Time, Pos, PLeft, PRigth , Tmax, Pmax ) ).    
 */
-initial_state( bcp, bcp( 0, left, [(a,1),(b,2),(c,5),(d,10),(e,15),(j,20)], [] , 42, 2 ) ).
+initial_state( bcp, bcp( 0, left, [(a,1),(b,2),(c,5),(d,10),(e,15)], [] , 21, 3 ) ).
 
 
 /*
     En el estado final el tiempo es TMax , linterna esta en la posicion rigth,
     todos se encuentran en la lista der y nadie a la izq.
 */
-final_state( bcp( Tmax, rigth, [], L1, Tmax, _ ) ):- perm([(a,1),(b,2),(c,5),(d,10),(e,15),(j,20)],L1).
+final_state( bcp( Tmax, rigth, [], L1, Tmax, _ ) ):- perm([(a,1),(b,2),(c,5),(d,10),(e,15)],L1).
 
 % Permuta la lista para ver si es uan solucion
 perm(List,[H|Perm]) :- delete(H,List,Rest),perm(Rest,Perm).
