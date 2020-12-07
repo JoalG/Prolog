@@ -284,14 +284,19 @@ maxTime([(P1,T1),(P2,T2)|Tail], N):-
 */
 value(bcp( _, left, _, PRigth , _, _),Value):- sumTime(PRigth,Value) .
 
-value(bcp( _, rigth, _, PRigth , _, _),Value):- length(PRigth,Value1), maxTime(PRigth,Value2), Value is (Value1*1000)+Value2.
+value(bcp( _, rigth, _, PRigth , _, _),Value):- 
+    length(PRigth,Value1), 
+    maxTime(PRigth,Value2), 
+    Value is (Value1*1000)+Value2.
 
 %   Calcula el tiempo de toda una lista 
 %   sumTime(List,Time)
 
 sumTime([],0).
 sumTime([(_,Time)],Time).
-sumTime([(_,Time1),(_,Time2)|Xs],TimeRes):- sumTime([(_,Time2)|Xs],TimePar),TimeRes is Time1+TimePar .
+sumTime([(_,Time1),(_,Time2)|Xs],TimeRes):- 
+    sumTime([(_,Time2)|Xs],TimePar),
+    TimeRes is Time1+TimePar .
 
 
 
